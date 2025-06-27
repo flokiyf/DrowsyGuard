@@ -207,11 +207,14 @@ export default function Home() {
           {/* Dashboard latéral */}
           <div className="space-y-6">
             <VigilanceDashboard />
-            <DetectionDebug 
-              debugInfo={debugInfo}
-              isInitialized={isInitialized}
-              detectionState={detectionState}
-            />
+            {/* DetectionDebug caché temporairement */}
+            {false && (
+              <DetectionDebug 
+                debugInfo={debugInfo}
+                isInitialized={isInitialized}
+                detectionState={detectionState}
+              />
+            )}
             
             {/* Statut actuel */}
             <div className="bg-gray-800/50 backdrop-blur-lg rounded-xl border border-gray-700 p-6">
