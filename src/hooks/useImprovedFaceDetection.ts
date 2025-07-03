@@ -281,7 +281,7 @@ export function useImprovedFaceDetection() {
       (alertLevel === AlertLevel.DROWSY && state.eyesClosedDuration > 1000)
     );
 
-    if (shouldAlert && (timestamp - store.lastAlertTime) > config.alertCooldown) {
+    if (shouldAlert && (timestamp - store.lastAlertTime) > store.detectionConfig.alertCooldown) {
       store.addAlert({
         type: alertLevel,
         message: `${alertLevel} - Yeux fermés ${Math.round(state.eyesClosedDuration/1000)}s`,

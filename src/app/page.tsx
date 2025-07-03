@@ -12,7 +12,6 @@ import { useImprovedDetection } from '@/hooks/improvedDetection';
 import CameraCapture from '@/components/camera/CameraCapture';
 import VigilanceDashboard from '@/components/dashboard/VigilanceDashboard';
 import AlertSystem from '@/components/alerts/AlertSystem';
-import DetectionDebug from '@/components/debug/DetectionDebug';
 import { AlertLevel } from '@/types/detection';
 
 export default function Home() {
@@ -32,7 +31,7 @@ export default function Home() {
     currentMetrics
   } = useDetectionStore();
 
-  const { isInitialized, debugInfo, detectionState } = useImprovedDetection();
+  const { isInitialized, debugInfo } = useImprovedDetection();
 
   // Gérer le démarrage/arrêt de session
   const handleToggleSession = () => {
@@ -44,7 +43,7 @@ export default function Home() {
         startSession();
         startDetection();
       } else {
-        alert('Veuillez d\'abord activer la caméra');
+        alert('Veuillez d&apos;abord activer la caméra');
       }
     }
   };
@@ -207,13 +206,22 @@ export default function Home() {
           {/* Dashboard latéral */}
           <div className="space-y-6">
             <VigilanceDashboard />
-            {/* DetectionDebug caché temporairement */}
-            {false && (
-              <DetectionDebug 
-                debugInfo={debugInfo}
-                isInitialized={isInitialized}
-                detectionState={detectionState}
-              />
+            
+            {/* Debug info inline pour éviter les problèmes d'import */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="bg-gray-800/50 backdrop-blur-lg rounded-xl border border-gray-700 p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">🔍 Debug Info</h3>
+                <div className="text-xs text-gray-300 p-2 bg-gray-900/50 rounded font-mono">
+                  {debugInfo || 'Système initialisé'}
+                </div>
+                <div className="mt-2">
+                  <span className={`px-2 py-1 rounded text-xs ${
+                    isInitialized ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                  }`}>
+                    MediaPipe: {isInitialized ? 'Prêt' : 'Chargement...'}
+                  </span>
+                </div>
+              </div>
             )}
             
             {/* Statut actuel */}

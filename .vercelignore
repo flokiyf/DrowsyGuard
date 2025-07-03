@@ -1,0 +1,35 @@
+# Fichiers de développement
+*.log
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Dossiers de développement
+node_modules
+.next
+.git
+.vscode
+.idea
+
+# Fichiers de test
+*.test.js
+*.test.ts
+*.test.tsx
+*.spec.js
+*.spec.ts
+*.spec.tsx
+
+# Documentation
+*.md
+!README.md
+
+# Fichiers temporaires
+*.tmp
+*.temp
+.cache
+
+# Modèles locaux (si volumineux)
+models/*.bin
+models/*.onnx 
