@@ -38,6 +38,23 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   output: 'standalone',
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=*, microphone=*, geolocation=()',
+          },
+          {
+            key: 'Feature-Policy',
+            value: 'camera \'self\'; microphone \'self\'',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

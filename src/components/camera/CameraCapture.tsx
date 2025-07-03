@@ -8,6 +8,7 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { Camera, CameraOff, Settings } from 'lucide-react';
 import { useDetectionStore } from '@/stores/detectionStore';
+import CameraPermissions from './CameraPermissions';
 // Retiré useFaceDetection pour éviter conflit avec useImprovedDetection
 
 interface CameraCaptureProps {
@@ -25,6 +26,7 @@ export default function CameraCapture({ className = '', isInitialized = false }:
   const [error, setError] = useState<string | null>(null);
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
+  const [showPermissions, setShowPermissions] = useState(false);
 
   const { 
     isCameraActive, 
@@ -95,10 +97,25 @@ export default function CameraCapture({ className = '', isInitialized = false }:
       }
 
     } catch (error: any) {
-      const errorMsg = `Erreur d'accès à la caméra: ${error.message}`;
+      console.error('Erreur caméra:', error);
+      
+      let errorMsg = 'Erreur d\'accès à la caméra';
+      
+      if (error.name === 'NotAllowedError') {
+        errorMsg = 'Permission caméra refusée';
+        setShowPermissions(true);
+      } else if (error.name === 'NotFoundError') {
+        errorMsg = 'Aucune caméra détectée';
+      } else if (error.name === 'NotSupportedError') {
+        errorMsg = 'Caméra non supportée';
+      } else if (error.name === 'SecurityError') {
+        errorMsg = 'Erreur de sécurité - HTTPS requis';
+      } else {
+        errorMsg = `Erreur: ${error.message}`;
+      }
+      
       setCameraError(errorMsg);
       setError(errorMsg);
-      console.error('Erreur caméra:', error);
     } finally {
       setIsLoading(false);
     }
