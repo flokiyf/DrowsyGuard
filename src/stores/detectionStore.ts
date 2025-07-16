@@ -16,6 +16,12 @@ import {
   AlertConfig 
 } from '@/types/detection';
 
+// Détection mobile
+const isMobile = () => {
+  if (typeof window === 'undefined') return false;
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
+
 interface DetectionState {
   // État caméra
   streamStatus: StreamStatus;
@@ -51,6 +57,9 @@ interface DetectionState {
     sessionDuration: number;
     alertsTriggered: number;
   };
+  
+  // Détection mobile
+  isMobileDevice: boolean;
 }
 
 interface DetectionActions {
@@ -110,8 +119,8 @@ const initialState: DetectionState = {
   activeAlerts: [],
   lastAlertTime: 0,
   detectionConfig: {
-    earThreshold: 0.25,
-    marThreshold: 0.6,
+    earThreshold: isMobile() ? 0.20 : 0.25,  // Moins sensible sur mobile
+    marThreshold: isMobile() ? 0.7 : 0.6,     // Plus tolérant sur mobile
     closedEyeDuration: 2000,
     yawnDuration: 1000,
     alertCooldown: 5000,
@@ -132,7 +141,8 @@ const initialState: DetectionState = {
   },
   sessionHistory: [],
   isCameraActive: false,
-  cameraError: null
+  cameraError: null,
+  isMobileDevice: isMobile()
 };
 
 export const useDetectionStore = create<DetectionState & DetectionActions>()(
@@ -356,8 +366,8 @@ export const useDetectionStore = create<DetectionState & DetectionActions>()(
         set(
           () => ({
             detectionConfig: {
-              earThreshold: 0.25,
-              marThreshold: 0.6,
+              earThreshold: isMobile() ? 0.20 : 0.25,
+              marThreshold: isMobile() ? 0.7 : 0.6,
               closedEyeDuration: 2000,
               yawnDuration: 1000,
               alertCooldown: 5000,

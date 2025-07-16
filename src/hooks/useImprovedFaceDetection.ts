@@ -234,7 +234,7 @@ export function useImprovedFaceDetection() {
     return { alertLevel, vigilanceScore, state };
   }, [detectionConfig]);
 
-  // Callback MediaPipe
+  // Callback MediaPipe avec optimisations mobile
   const onResults = useCallback((results: any) => {
     if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
       setDebugInfo('Aucun visage détecté');
@@ -265,7 +265,11 @@ export function useImprovedFaceDetection() {
     const store = useDetectionStore.getState();
     store.updateMetrics(metrics);
     store.incrementFrameCount();
-    store.updateFPS(30); // Approximation
+    
+    // FPS adaptatif selon appareil
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const targetFPS = isMobileDevice ? 15 : 30;
+    store.updateFPS(targetFPS);
     
     store.updateVigilanceState({
       level: alertLevel,
@@ -274,14 +278,15 @@ export function useImprovedFaceDetection() {
       duration: state.eyesClosedDuration
     });
 
-    // Déclencher alertes
+    // Déclencher alertes avec cooldown adaptatif mobile
     const shouldAlert = (
       alertLevel === AlertLevel.CRITICAL ||
       (alertLevel === AlertLevel.VERY_DROWSY && state.eyesClosedDuration > 2000) ||
       (alertLevel === AlertLevel.DROWSY && state.eyesClosedDuration > 1000)
     );
 
-    if (shouldAlert && (timestamp - store.lastAlertTime) > store.detectionConfig.alertCooldown) {
+    const cooldown = isMobileDevice ? 8000 : 5000; // Cooldown plus long sur mobile
+    if (shouldAlert && (timestamp - store.lastAlertTime) > cooldown) {
       store.addAlert({
         type: alertLevel,
         message: `${alertLevel} - Yeux fermés ${Math.round(state.eyesClosedDuration/1000)}s`,
@@ -308,11 +313,14 @@ export function useImprovedFaceDetection() {
         }
       });
 
+      // Configuration adaptée mobile
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
       await faceMesh.setOptions({
         maxNumFaces: 1,
         refineLandmarks: true,
-        minDetectionConfidence: 0.7,
-        minTrackingConfidence: 0.7
+        minDetectionConfidence: isMobileDevice ? 0.5 : 0.7,  // Moins strict sur mobile
+        minTrackingConfidence: isMobileDevice ? 0.5 : 0.7    // Moins strict sur mobile
       });
 
       faceMesh.onResults(onResults);
@@ -342,9 +350,16 @@ export function useImprovedFaceDetection() {
       setDebugInfo(`Erreur détection: ${error}`);
     }
 
-    // Continuer la boucle
+    // Continuer la boucle avec FPS adaptatif mobile
     if (isDetectionActive) {
-      requestAnimationFrame(detectFace);
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const frameDelay = isMobileDevice ? 1000 / 15 : 1000 / 30; // 15 FPS mobile, 30 FPS desktop
+      
+      setTimeout(() => {
+        if (isDetectionActive) {
+          requestAnimationFrame(detectFace);
+        }
+      }, frameDelay);
     }
   }, [isDetectionActive, videoElement]);
 
